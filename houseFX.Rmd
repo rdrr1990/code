@@ -1,0 +1,163 @@
+---
+title: "Testing for House Effects"
+author: "Pete Mohanty"
+date: "October 17, 2016"
+output: html_document
+---
+
+This R Markdown provides code for testing for "house effects" (i.e., the effect the pollster has on polling results). This code uses the following libraries. The data are from Huffington Post's pollstR and will update each time this file is knit.
+```{r, eval=F}
+library(dplyr); library(tidyr); library(pollstR); library(bigKRLS)
+```
+
+```{r, echo=FALSE, message=F, warning=F}
+library(ggplot2); library(dplyr); library(tidyr); library(pollstR)
+library(bigKRLS) # can be installed via gitHub. like STAN, depends Rcpp. windows users should use R, not RStudio. if you don't want to install Rcpp and bigmemory, the base R package (krls) should be fine at this sample size
+```
+# The Data
+```{r}
+slug <- "2016-general-election-trump-vs-clinton"  
+polls <- read.csv(pollstR:::chart_data_url(slug))    
+glimpse(polls)
+```
+### Some Descriptives
+```{r}
+head(sort(table(polls[,6]), decreasing = T))
+table(polls$sample_subpopulation, polls$mode)
+```
+
+
+
+```{r, echo=FALSE, message=F, warning=F}
+N <- nrow(polls)
+
+X <- cbind(polls$Other, 
+           ifelse(is.na(polls$Other), 0, 1),
+           polls$Undecided, 
+           ifelse(is.na(polls$Undecided), 0, 1))
+X[is.na(X)] <- 0  
+
+colnames(X) <- c("third_party_p", "asked_third_party", "undecided_p", "asked_undecided")
+
+Xlabs <- levels(polls$pollster)           
+Xlabs <- tolower(Xlabs)
+Xlabs <- gsub(" ", "_", Xlabs)
+Xlabs <- gsub("/", "_", Xlabs)
+Xlabs <- gsub("-", "_", Xlabs)
+Xlabs <- gsub("\'", "", Xlabs)
+Xlabs <- gsub("\\,", "", Xlabs)
+Xlabs <- gsub("\\(", "", Xlabs)
+Xlabs <- gsub("\\)", "", Xlabs)
+
+house <- matrix(nrow = nrow(polls), ncol = length(Xlabs), 0)
+house[cbind(1:nrow(polls), match(polls$pollster, levels(polls$pollster)))] <- 1
+colnames(house) <- Xlabs
+
+X <- cbind(X, house)
+
+tmp <- lapply(strsplit(as.character(polls$start_date), split="-"), as.numeric)
+start_date <- unlist(lapply(tmp, function(d){d[1] + d[2]/12 + d[3]/ifelse(d[3] == 2016, 366, 365)}))
+tmp <- lapply(strsplit(as.character(polls$end_date), split="-"), as.numeric)
+end_date <- unlist(lapply(tmp, function(d){d[1] + d[2]/12 + d[3]/ifelse(d[3] == 2016, 366, 365)}))
+X <- cbind(X, start_date)
+X <- cbind(X, end_date)
+
+subpop <- matrix(ncol=3, nrow=nrow(X), 0)
+tmp <- levels(polls$sample_subpopulation)
+tmp <- tolower(tmp)
+tmp <- gsub(" ", "_", tmp)
+colnames(subpop) <- tmp
+subpop[cbind(1:nrow(X), match(polls$sample_subpopulation, levels(polls$sample_subpopulation)))] <- 1
+X <- cbind(X, subpop)
+
+mode <- matrix(ncol=length(levels(polls$mode)), nrow=nrow(X), 0)
+tmp <- levels(polls$mode)
+tmp <- tolower(tmp)
+tmp <- gsub(" ", "_", tmp)
+tmp <- gsub("/", "_", tmp)
+colnames(mode) <- tmp
+mode[cbind(1:nrow(X), match(polls$mode, levels(polls$mode)))] <- 1
+X <- cbind(X, mode)
+
+partisanship <- matrix(ncol=length(levels(polls$partisanship)), nrow=nrow(X), 0)
+tmp <- levels(polls$partisanship)
+tmp <- tolower(tmp)
+colnames(partisanship) <- tmp
+partisanship[cbind(1:nrow(X), match(polls$partisanship, levels(polls$partisanship)))] <- 1
+X <- cbind(X, partisanship)
+
+partisan_affiliation <- matrix(ncol=length(levels(polls$partisan_affiliation)), nrow=nrow(X), 0)
+tmp <- levels(polls$partisan_affiliation)
+tmp <- tolower(tmp)
+colnames(partisan_affiliation) <- tmp
+partisan_affiliation[cbind(1:nrow(X), match(polls$partisan_affiliation, levels(polls$partisan_affiliation)))] <- 1
+X <- cbind(X, partisan_affiliation)
+
+X <- X[sort(rep(1:N, 2)),]
+
+y <- matrix(nrow=2*N)
+y[seq(1, 2*N, 2)] <- polls$Trump
+y[seq(2, 2*N, 2)] <- polls$Clinton
+
+X <- cbind(rep(c(0, 1), N), X)
+colnames(X)[1] <- "Hillary"
+Hillary <- hillary <- rep(c(0, 1), N)
+    
+out_with_date <- bigKRLS(y , X[,c(1, grep("date", colnames(X)))],noisy=F) # all contain date and hillary dummy
+out_with_poll_features <- bigKRLS(y , X[,c(1, grep("asked", colnames(X)),
+                                           grep("date", colnames(X)):ncol(X))], noisy=F)
+out_with_pollster <- bigKRLS(y , X[,  !(1:ncol(X) %in% grep("adults", colnames(X)):ncol(X))], noisy=F)
+out_with_poll_features_and_pollster <- bigKRLS(y, X, noisy=F) 
+```
+
+# Approach
+
+Using `r N` polls, I regress the percentage who intend to vote for Hillary and Trump (stacked as a single vector) on date, poll features (online vs. phone, whether third parties were asked about, and so on), and/or the polling house. 
+
+# Fitted Values for Likely Voters
+
+Hillary leads but by just how much gets murkier once poll features are included. Polling house and/or features explains up to a third of the variance in the polls. All models include the date of the poll conducted. Most of the variance explained by house effects can be explained by poll design features (online vs. phone, whether asked about third parties, whether asked about undecided, and so on). 
+
+```{r, echo=F}
+# par(mfrow = c(2,2))
+
+plot((out_with_date$fitted[hillary + X[,grep("likely", colnames(X))] == 2] - out_with_date$fitted[(1 - hillary) + X[,grep("likely", colnames(X))] == 2]) ~ X[Hillary + X[,grep("likely", colnames(X))] == 2,grep("start", colnames(X))], 
+     xlim = c(2016, 2017), ylim=c(0,8),
+     ylab = "Fitted Values (%)", 
+     main = "Hillary\'s Lead among Likely Voters\nas f(Time Only)", xlab="",col="blue", pch=18,
+     sub = paste("\nR^2 =", round(out_with_date$R2, 3), paste("\nData: pollstR\n", nrow(polls), "polls through",                                                                    sort(unique(polls$end_date))[[length(sort(unique(polls$end_date)))]])))
+
+
+plot((out_with_poll_features$fitted[hillary + X[,grep("likely", colnames(X))] == 2] - out_with_poll_features$fitted[(1 - hillary) + X[,grep("likely", colnames(X))] == 2]) ~ X[Hillary + X[,grep("likely", colnames(X))] == 2,grep("start", colnames(X))], 
+     xlim = c(2016, 2017),  ylim=c(0,8),
+     ylab = "Fitted Values (%)", 
+     main = "Hillary\'s Lead among Likely Voters\nas f(Poll Design Features)", xlab="",col="blue", pch=18,
+     sub = paste("\nR^2 =", round(out_with_poll_features$R2, 3), paste("\nData: pollstR\n", nrow(polls), "polls through",                                                                    sort(unique(polls$end_date))[[length(sort(unique(polls$end_date)))]])))
+
+plot((out_with_pollster$fitted[hillary + X[,grep("likely", colnames(X))] == 2] - out_with_pollster$fitted[(1 - hillary) + X[,grep("likely", colnames(X))] == 2]) ~ X[Hillary + X[,grep("likely", colnames(X))] == 2,grep("start", colnames(X))], 
+     xlim = c(2016, 2017),  ylim=c(0,8),
+     ylab = "Fitted Values (%)", 
+     main = "Hillary\'s Lead among Likely Voters\nas f(Pollster)", xlab="",col="blue", pch=18,
+     sub = paste("\nR^2 =", round(out_with_pollster$R2, 3), paste("\nData: pollstR\n", nrow(polls), "polls through",                                                                    sort(unique(polls$end_date))[[length(sort(unique(polls$end_date)))]])))
+
+plot((out_with_poll_features_and_pollster$fitted[hillary + X[,grep("likely", colnames(X))] == 2] - out_with_poll_features_and_pollster$fitted[(1 - hillary) + X[,grep("likely", colnames(X))] == 2]) ~ X[Hillary + X[,grep("likely", colnames(X))] == 2,grep("start", colnames(X))], 
+     xlim = c(2016, 2017), ylim=c(0,8),
+     ylab = "Fitted Values (%)", 
+     main = "Hillary\'s Lead among Likely Voters\nas f(Pollster and Poll Design Features)", xlab="",col="blue", pch=18,
+     sub = paste("\nR^2 =", round(out_with_poll_features_and_pollster$R2, 3), paste("\nData: pollstR\n", nrow(polls), "polls through",                                                                    sort(unique(polls$end_date))[[length(sort(unique(polls$end_date)))]])))
+```
+
+
+
+```{r, echo=F}
+barplot(rbind(by(out_with_poll_features_and_pollster$fitted[Hillary == 1], polls$pollster, mean),
+by(out_with_poll_features_and_pollster$fitted[Hillary == 0], polls$pollster, mean)), beside=T,
+las=2, main="Mean Fitted Values by Pollster")
+```
+
+```{r, eval=F}
+summary(out_with_date, digits=3)
+summary(out_with_poll_features, digits=3)
+summary(out_with_pollster, digits=3)
+summary(out_with_poll_features_and_pollster, digits=3)
+```
