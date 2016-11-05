@@ -1,0 +1,144 @@
+---
+title: "Testing for House Effects"
+author: "Pete Mohanty"
+date: "October 17, 2016"
+output: html_document
+---
+
+This R Markdown provides code for testing for "house effects" (i.e., the effect the pollster has on polling results). This code uses the following libraries. The data are from Huffington Post's pollstR and will update each time this file is knit.
+```{r, eval=F}
+library(dplyr); library(tidyr); library(pollstR); library(bigKRLS)
+```
+
+```{r, echo=FALSE, message=F, warning=F}
+library(ggplot2); library(dplyr); library(tidyr); library(pollstR)
+library(bigKRLS) # can be installed via gitHub. like STAN, depends Rcpp. windows users should use R, not RStudio. if you don't want to install Rcpp and bigmemory, the base R package (krls) should be fine at this sample size
+```
+# The Data
+```{r}
+slug <- "2016-general-election-trump-vs-clinton"  
+polls2016 <- read.csv(pollstR:::chart_data_url(slug))    
+glimpse(polls2016)
+polls2012 <- read.csv("http://elections.huffingtonpost.com/pollster/2012-general-election-romney-vs-obama.csv")   
+glimpse(polls2012)
+```
+## Some Descriptives
+### 2016
+```{r}
+head(sort(table(polls2016$sample_subpopulation), decreasing = T))
+table(polls2016$sample_subpopulation, polls$mode)
+```
+### 2012
+```{r}
+head(sort(table(polls2012$Population), decreasing = T))
+table(polls2012$Population, polls2012$Mode)
+```
+
+```{r, echo=FALSE, message=F, warning=F}
+N <- nrow(polls2016) + nrow(polls2012)
+
+X <- cbind(c(polls2016$Other,polls2012$Other), 
+           ifelse(is.na(c(polls2016$Other, polls2012$Other)), 0, 1),
+           c(polls2016$Undecided,polls2012$Undecided), 
+           ifelse(is.na(c(polls2016$Undecided, polls2012)), 0, 1))
+colnames(X) <- c("third_party_p", "asked_third_party", "undecided_p", "asked_undecided")
+X[is.na(X)] <- 0  
+Nobs <- c(polls2016$sample_size, polls2012$Number.of.Observations)
+Nobs[is.na(Nobs)] <- mean(Nobs, na.rm=T)
+X <- cbind(X, Nobs)
+
+pollsters <- c(levels(polls2016$pollster), levels(polls2012$Pollster))
+pollsters <- c(as.character(polls2016$pollster), as.character(polls2012$Pollster))
+pollsters <- tolower(pollsters)
+pollsters <- gsub("&", "", pollsters)
+pollsters <- gsub(" ", "_", pollsters)
+pollsters <- gsub("/", "_", pollsters)
+pollsters <- gsub("-", "_", pollsters)
+pollsters <- gsub("\\.", "_", pollsters)
+pollsters <- gsub("\'", "", pollsters)
+pollsters <- gsub("\\,", "", pollsters)
+pollsters <- gsub("\\(", "", pollsters)
+pollsters <- gsub("\\)", "", pollsters)
+pollsters <- gsub("___", "_", pollsters)
+pollsters <- gsub("__", "_", pollsters)
+pollsters[which(pollsters == "usa_today_gallup")] <- "usatoday_gallup"
+
+house <- matrix(nrow = N, ncol = length(unique(pollsters)), 0)
+house[cbind(1:N, match(pollsters, unique(pollsters)))] <- 1
+colnames(house) <- unique(pollsters)
+
+X <- cbind(X, house)
+
+tmp <- lapply(strsplit(c(as.character(polls2016$start_date), as.character(polls2012$Start.Date)), split="-"), as.numeric)
+continuous.date <- function(d){d[1] + d[2]/12 + d[3]/ifelse(d[3] %% 4 == 0, 366, 365)}
+start_date <- unlist(lapply(tmp, continuous.date))
+tmp <- lapply(strsplit(as.character(polls$end_date), split="-"), as.numeric)
+end_date <- unlist(lapply(tmp, continuous.date))
+
+election2016 <- c(rep(1, nrow(polls2016)), rep(0, nrow(polls2012)))
+time_until_election_start <- ifelse(election2016 == 1, 2016 + 11/12 + 8/366, 2012 + 11/12 + 6/366) - start_date
+time_until_election_end <- ifelse(election2016 == 1, 2016 + 11/12 + 8/366, 2012 + 11/12 + 6/366) - end_date
+  
+X <- cbind(X, time_until_election_start)
+X <- cbind(X, time_until_election_end)
+
+subpop <- matrix(ncol=length(levels(polls2012$Population)), nrow=N, 0)
+tmp <- gsub("- ", "", levels(polls2012$Population))
+colnames(subpop) <- gsub(" ", "_", tmp)
+subpop[cbind(1:N, match(c(as.character(polls2016$sample_subpopulation), as.character(polls2012$Population)), 
+                        levels(polls2012$Population)))] <- 1
+X <- cbind(X, subpop)
+
+mode <- matrix(ncol=length(levels(polls2012$Mode)), nrow=N, 0) # all 2016 modes are coded the same in 2012
+tmp <- gsub(" ", "_", tolower(levels(polls2012$Mode)))
+colnames(mode) <- gsub("/", "_", tmp)
+mode[cbind(1:N, match(c(as.character(polls2016$mode), as.character(polls2012$Mode)), 
+                      levels(polls2012$Mode)))] <- 1
+X <- cbind(X, mode)
+
+# same levels both cycles
+partisanship <- matrix(ncol=length(levels(polls2016$partisanship)), nrow=nrow(X), 0)
+colnames(partisanship) <- tolower(levels(polls2016$partisanship))
+partisanship[cbind(1:N, match(c(as.character(polls2016$partisanship), as.character(polls2012$Partisan)), 
+                              levels(polls2012$Partisan)))] <- 1
+X <- cbind(X, partisanship)
+
+# same levels both cycles
+partisan_affiliation <- matrix(ncol=length(levels(polls2012$Affiliation)), nrow=N, 0)
+colnames(partisan_affiliation) <- paste("affliation_", tolower(levels(polls2012$Affiliation)), sep="")
+partisan_affiliation[cbind(1:N, match(c(as.character(polls2016$partisan_affiliation), as.character(polls2012$Affiliation)), levels(polls2016$partisan_affiliation)))] <- 1
+X <- cbind(election2016, X, partisan_affiliation)
+
+X <- X[sort(rep(1:N, 2)),]
+y <- matrix(nrow=2*N)
+y[seq(1, 2*N, 2)] <- c(polls2016$Trump, polls2012$Romney)
+y[seq(2, 2*N, 2)] <- c(polls2016$Clinton, polls2012$Obama) 
+
+X <- cbind(rep(c(0, 1), N), X)
+colnames(X)[1] <- "dem_candidate"
+dem_candidate <- rep(c(0, 1), N)
+
+out <- bigKRLS(y, X)
+summary(out)
+
+Xpredict <- matrix(nrow=200, ncol=ncol(X), 0)
+colnames(Xpredict) <- colnames(X)
+Xpredict <- as.data.frame(Xpredict)
+Xpredict$dem_candidate <- c(rep(0, 100),rep(1,100))
+Xpredict$asked_third_party <- 1
+Xpredict$third_party_p <- rep(1:100/10,2)
+Xpredict$election2016 <- 1
+Xpredict$Likely_Voters <- 1
+Xpredict$Nobs <- mean(as.data.frame(X)$Nobs)
+Xpredict <- as.matrix(Xpredict)
+forecast <- predict(out, Xpredict, se.fit = T)
+
+mean(forecast$fit[101:200] - forecast$fit[1:100])
+range(forecast$se.fit)
+
+Hlead <- forecast$fit[101:200] - forecast$fit[1:100]
+mean(Hlead)
+min(Hlead)
+max(forecast$se.fit)
+```
+
