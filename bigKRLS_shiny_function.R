@@ -10,19 +10,27 @@
 
 # demo code
 #library(bigKRLS)
-#X <- matrix(runif(5000, -2*pi, 2*pi), ncol=5)
-#y <- sin(X[,1])*X[,1] + X[,4:5] %*% 4:5 + rnorm(1000)
+#X <- matrix(runif(5000, -4*pi, 4*pi), ncol=5)
+#y <- sin(X[,1]) + 3*X[,2]*X[,3] + X[,4] %*% 4 + rnorm(1000)
 #out <- bigKRLS(y, X)
 #summary(out)
-#run code below here
-#shiny_bigKRLS(out) 
+#shiny_bigKRLS(out)
+#shiny_bigKRLS(out, main.label = "The Results of Careful Inquiry", plot.main.label = "Planes, Trains, or Automobiles?", labs = c("a", "b", "c", "d", "e"))
 
+
+shiny_bigKRLS(out)
+
+colnames(out$X) 
 
 library(shiny)
 library(bigKRLS)
 
 
-shiny_bigKRLS <- function(out, export=F){
+shiny_bigKRLS <- function(out, export=F, main.label = NULL, plot.main.label = NULL, labs = NULL){
+  
+  if(!is.null(labs)){
+    colnames(out$X) <- colnames(out$derivatives) <- names(out$avgderivatives) <- names(out$var.avgderivatives) <- labs
+  }
   
   palette(c("#E41A1C", "#377EB8", "#4DAF4A", "#984EA3",
             "#FF7F00", "#FFFF33", "#A65628", "#F781BF", "#999999"))
@@ -42,7 +50,7 @@ shiny_bigKRLS <- function(out, export=F){
                           y=selectedData()[[1]][,1])
         
         plot(y=L$y, x=L$x, ylab=paste("Marginal Effect of",input$dydxp), pch = 19, bty = "n",
-             main=main.label, 
+             main=plot.main.label, 
              xlab=paste("Observed Level of", input$xp), cex=2, cex.axis=1.5,  cex.lab=1.4,
              col = colorRampPalette(c("blue", "red"))(length(L$y))[rank(L$y)])
         
@@ -50,7 +58,7 @@ shiny_bigKRLS <- function(out, export=F){
         plot(x=(selectedData()[[1]][,2]), xlab = paste("Observed Level of", input$xp),
              y=(selectedData()[[1]][,1]), ylab = paste("Marginal Effect of",input$dydxp), 
              pch = 4, bty = "n", cex=2, cex.axis=1.5,  cex.lab=1.4,
-             main=main.label,
+             main=plot.main.label,
              col = colorRampPalette(c("green", "purple"))(nrow(out$X))[rank(out$coeffs^2)], 
              ylim = range(selectedData()[[1]][,1])*c(.8, 1.25), 
              xlim = range(selectedData()[[1]][,2])*c(.8, 1.25))
@@ -59,7 +67,7 @@ shiny_bigKRLS <- function(out, export=F){
                            legend.cex = 0.75,legend.shrink = .4,   
                            col = colorRampPalette(c("purple", "green"))(nrow(out$X)))
         text(x = 1.2*range(selectedData()[[1]][,2])[2], 
-             y = .5*range(selectedData()[[1]][,1])[2], 
+             y = .75*range(selectedData()[[1]][,1])[2], 
              "Relative Fit \nIn Full Model") 
       }
     })})
@@ -95,6 +103,7 @@ shiny_bigKRLS <- function(out, export=F){
     shinyApp(ui = bigKRLS_ui, server = bigKRLS_server)
   }
 }
+
 
 
 
