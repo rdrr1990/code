@@ -55,7 +55,7 @@ You should be good to go!
 
 
 ## Memory Limits
-Despite improvements, the algorithm is still incredibly memory intensive. We recommend proceeding cautiously and bearing in mind that memory usage is a quadratic function of the number of observations, N (roughly 5N^2, possibly worse for the eigendecomposition). Users should estimate models N = 1,000, 2,500, and 5,000 to see how their system performs before considering larger models. See https://sites.google.com/site/petemohanty/software for detail.
+Despite improvements, the algorithm is still incredibly memory intensive. We recommend proceeding cautiously and bearing in mind that memory usage is a quadratic function of the number of observations, N (roughly 5N<sup>2</sup>, possibly worse for the eigendecomposition). Users should estimate models N = 1,000, 2,500, and 5,000 to see how their system performs before considering larger models. See https://sites.google.com/site/petemohanty/software for detail.
 
 ## License 
 Code released under GPL (>= 2).
