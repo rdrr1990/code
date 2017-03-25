@@ -1,6 +1,6 @@
 # "big" Install
 
-bigKRLS is an R algorithm for Kernel-Regularized Least Squares that uses big data packages for size and C++ for speed. This architecture takes a bit of work to set up because R isn't necessarily properly set to connect C++ to C and FORTRAN (i.e., R throws lengthy error messages about lquadmath, lqfortran, clang++, and/or g++). Once initial installation is complete, everything will be connected under the hood and you'll be able to install lots of newer R packages like rstan and biglasso. 
+bigKRLS is an R algorithm for Kernel-Regularized Least Squares that uses big data packages for size and C++ for speed. This architecture takes a bit of work to set up because R isn't necessarily properly set to connect C++ to C and FORTRAN (i.e., R throws lengthy error messages about lquadmath, lqfortran, clang++, and/or g++). Once initial installation is complete, everything will be connected under the hood and you'll be able to install newer R packages like rstan and biglasso. 
 
 ## Supported Operating Systems
 bigKRLS has been run on Mac OS X Yosemite 10.10.5, Linux Ubuntu 14.04, and Windows 7 and Windows 8.
