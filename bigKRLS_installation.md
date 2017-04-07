@@ -34,7 +34,7 @@ If troubles persist, we found the following pages particularly helpful: [A](http
 ```{r, eval = F}
 install.packages("devtools")  
 library(devtools)  
-install.packages(c("Rcpp", "RcppArmadillo", "bigmemory", "biganalytics", "shiny"))  
+install.packages(c("Rcpp", "RcppArmadillo", "bigmemory", "biganalytics", "snow", "shiny"))  
 ```
 
 
