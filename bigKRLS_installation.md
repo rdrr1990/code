@@ -5,8 +5,6 @@ bigKRLS is an R algorithm for Kernel-Regularized Least Squares that uses big dat
 ## Supported Platforms
 bigKRLS has been run on Mac OS X Yosemite 10.10.5, Linux Ubuntu 14.04, and Windows 7 and Windows 8.
 
-To use RStudio, Windows users must use RStudio 1.1.129 or newer. 
-
 
 ## Pre-Requisites
 
@@ -14,9 +12,15 @@ bigKRLS is designed to run on R version 3.3.0 ("Supposedly Educational" released
 
 -- Install the newest R at https://cran.r-project.org 
 
+### Current RStudio
+
+To use RStudio, Windows users must use RStudio 1.1.129 or newer. Unix-type users (including Mac) must use 1.0.136 or newer. Install the newest RStudio by visiting https://www.rstudio.com/products/rstudio/download/ or https://dailies.rstudio.com/
+
 ### Windows users must install up-to-date Rtools (3.3 or newer):
 
 [https://cran.r-project.org/bin/windows/Rtools/](https://cran.r-project.org/bin/windows/Rtools/)
+
+RTools [best practices](http://thecoatlessprofessor.com/programming/rcpp/install-rtools-for-rcpp/)
 
 ### Mac OSX 
 OSX users may still need gfortran, which can be installed with the following two terminal commands :
