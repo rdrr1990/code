@@ -16,7 +16,7 @@ bigKRLS is designed to run on R version 3.3.0 ("Supposedly Educational" released
 
 To use RStudio, Windows users must use RStudio 1.1.129 or newer. Unix-type users (including Mac) must use 1.0.136 or newer. 
 
-https://www.rstudio.com/products/rstudio/download/ 
+https://www.rstudio.com/products/rstudio/download/    
 https://dailies.rstudio.com/
 
 
