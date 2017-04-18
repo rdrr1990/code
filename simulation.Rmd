@@ -1,0 +1,17 @@
+---
+title: "sin"
+author: "Pete Mohanty"
+date: "October 20, 2016"
+output: beamer_presentation
+---
+
+```{r, eval = F, tidy=T, tidy.opts=list(blank=FALSE, width.cutoff=50)}
+library(bigKRLS)
+N <- 5000
+P <- 2
+set.seed(11112016)
+X <- matrix(runif(N * P, -2*pi, 2*pi), ncol = P)
+y <- sin(X[,1]) + X[,2] + rnorm(N)
+fit <- bigKRLS(y, X)
+```
+
