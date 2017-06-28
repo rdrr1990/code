@@ -12,6 +12,8 @@ P <- 2
 set.seed(11112016)
 X <- matrix(runif(N * P, -2*pi, 2*pi), ncol = P)
 y <- sin(X[,1]) + X[,2] + rnorm(N)
-fit <- bigKRLS(y, X)
+out <- bigKRLS(y, X)
+shiny.bigKRLS(out)
+
 ```
 
