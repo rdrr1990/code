@@ -27,22 +27,16 @@ https://dailies.rstudio.com/
 RTools [best practices](http://thecoatlessprofessor.com/programming/rcpp/install-rtools-for-rcpp/)
 
 ### Mac OSX 
-OSX users may still need gfortran, which can be installed with the following two terminal commands :
-
-```
-curl -O http://r.research.att.com/libs/gfortran-4.8.2-darwin13.tar.bz2  
-sudo tar fvxz gfortran-4.8.2-darwin13.tar.bz2 -C /
-```
-
-If troubles persist, we found the following pages particularly helpful: [A](http://thecoatlessprofessor.com/programming/setting-up-rstudio-to-work-with-rcpparmadillo/), [B](http://thecoatlessprofessor.com/programming/rcpp-rcpparmadillo-and-os-x-mavericks-lgfortran-and-lquadmath-error/), and section 2.16 of: [C](http://dirk.eddelbuettel.com/code/rcpp/Rcpp-FAQ.pdf).
+Mac users will need `clang4` (the recent version is required for `OMP` multicore processing used by other `R` libraries such as `biglasso`). Though `clang4` can be installed with bash commands, the [installer](https://uofi.box.com/v/r-macos-clang-pkg) developed by the Coatless Professor (@coatless) is highly recommended since it automatically takes care of the configuration files and paths `R` requires. For detail, see [https://github.com/coatless/r-macos-clang](https://github.com/coatless/r-macos-clang). If troubles persist, we found the following pages particularly helpful: [A](http://thecoatlessprofessor.com/programming/setting-up-rstudio-to-work-with-rcpparmadillo/), [B](http://thecoatlessprofessor.com/programming/rcpp-rcpparmadillo-and-os-x-mavericks-lgfortran-and-lquadmath-error/), and section 2.16 of: [C](http://dirk.eddelbuettel.com/code/rcpp/Rcpp-FAQ.pdf).
 
 
 ## The Environment
+`bigKRLS` has several dependencies, some of which require recent version of their dependencies. To smooth installation, we recommend installing these packages first.
 
 ```{r, eval = F}
+install.packages(c("Rcpp", "RcppArmadillo", "bigmemory", "biganalytics", "snow", "shiny", "httpuv", "scales", "lazyeval", "tibble")) 
 install.packages("devtools")  
 library(devtools)  
-install.packages(c("Rcpp", "RcppArmadillo", "bigmemory", "biganalytics", "snow", "shiny"))  
 ```
 
 
