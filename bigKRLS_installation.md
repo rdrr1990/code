@@ -36,15 +36,22 @@ Mac users will need `clang4` (the recent version is required for `OMP` multicore
 ## The Environment
 `bigKRLS` has several dependencies, some of which require recent version of their dependencies. To smooth installation, we recommend installing these packages first.
 
-```{r, eval = F}
+```
 install.packages(c("Rcpp", "RcppArmadillo", "bigmemory", "biganalytics", "snow", "shiny", "httpuv", "scales", "lazyeval", "tibble")) 
-install.packages("devtools")  
-library(devtools)  
+```
+## Install via CRAN
+You should now be able to install via CRAN.
+```
+install.packages("bigKRLS")
 ```
 
-
 ## Install via GitHub
-You should now be able to install bigKRLS. Windows users should first run these extra lines:
+You should now be also able to install bigKRLS via GitHub. 
+```
+install.packages("devtools")   
+library(devtools)  
+```
+Windows users should first run these extra lines:
 ```{r, eval = F}
 find_rtools()
 find_rtools(T)  
