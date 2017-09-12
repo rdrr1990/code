@@ -3,14 +3,14 @@
 `bigKRLS` is an `R` algorithm for Kernel-Regularized Least Squares that uses big data packages for size and C++ for speed. This architecture takes a bit of work to set up because R isn't necessarily properly set to connect C++ to C and FORTRAN (i.e., R throws lengthy error messages about lquadmath, lqfortran, clang++, and/or g++). Once everything is connected under the hood you'll be able to install `R` packages like `rstan` and `biglasso` too. 
 
 ## Supported Platforms
-`bigKRLS` has been run on Mac OS X Yosemite 10.10.5, Linux Ubuntu 14.04, and Windows 7 and Windows 8.
+`bigKRLS` has been run on multiple platforms including `Mac OS X` `Yosemite 10.10.5` and `Sierra 10.12.6`, `Linux Ubuntu 14.04`, and `Windows 7` and `Windows 8`.
 
 
 ## Pre-Requisites
 
-`bigKRLS` is designed to run on R version 3.3.0 ("Supposedly Educational" released 2016-05-03) or newer. Older, even fairly recent, versions of R will not work with `bigmemory`. 
+`bigKRLS` is designed to run on `R version 3.3.0` ("Supposedly Educational" released 2016-05-03) or newer. Older, even fairly recent, versions of `R` will not work with `bigmemory`. 
 
--- Install the newest R at https://cran.r-project.org 
+-- Install the newest `R` at https://cran.r-project.org 
 
 ### Windows users must install up-to-date Rtools (3.3 or newer):
 
@@ -19,7 +19,13 @@
 RTools [best practices](http://thecoatlessprofessor.com/programming/rcpp/install-rtools-for-rcpp/)
 
 ### Mac OSX 
-Mac users will need `clang4` (the recent version is required for `OMP` multicore processing used by other `R` libraries such as `biglasso`). Though `clang4` can be installed with bash commands, the [installer](https://uofi.box.com/v/r-macos-clang-pkg) developed by the Coatless Professor (@coatless) is highly recommended since it automatically takes care of the configuration files and paths `R` requires. For detail, see [https://github.com/coatless/r-macos-clang](https://github.com/coatless/r-macos-clang). If troubles persist, we found the following pages particularly helpful: [A](http://thecoatlessprofessor.com/programming/setting-up-rstudio-to-work-with-rcpparmadillo/), [B](http://thecoatlessprofessor.com/programming/rcpp-rcpparmadillo-and-os-x-mavericks-lgfortran-and-lquadmath-error/), and section 2.16 of: [C](http://dirk.eddelbuettel.com/code/rcpp/Rcpp-FAQ.pdf).
+Mac users will need to be sure their compilers are up-to-date. Without fairly current compilers (i.e., not the old ones that come with `OS X`), it will not be possible to install [RcppArmadillo](https://cran.r-project.org/web/packages/RcppArmadillo/index.html). 
+
+For the `g++` family, version `4.6.*` or newer is required. For `g++` and related software, see [The Coatless Professor's OpenMP in R and OSX](http://thecoatlessprofessor.com/programming/openmp-in-r-on-os-x/). Everything up to the `clang4` instructions on that page are recommended.
+
+Mac users will need `clang4` (the recent version is required for `OMP` multicore processing used by other `R` libraries such as `biglasso`). Though `clang4` can be installed with bash commands, the [installer](https://uofi.box.com/v/r-macos-clang-pkg) developed by the Coatless Professor (@coatless) is highly recommended since it automatically takes care of the configuration files and paths `R` requires. For detail, see [https://github.com/coatless/r-macos-clang](https://github.com/coatless/r-macos-clang). 
+
+If troubles persist, we found the following pages particularly helpful: [A](http://thecoatlessprofessor.com/programming/setting-up-rstudio-to-work-with-rcpparmadillo/), [B](http://thecoatlessprofessor.com/programming/rcpp-rcpparmadillo-and-os-x-mavericks-lgfortran-and-lquadmath-error/), and section 2.16 of: [C](http://dirk.eddelbuettel.com/code/rcpp/Rcpp-FAQ.pdf).
 
 
 ### Current RStudio
