@@ -19,7 +19,7 @@
 RTools [best practices](http://thecoatlessprofessor.com/programming/rcpp/install-rtools-for-rcpp/)
 
 ### Mac OSX 
-Mac users will need to be sure their compilers are up-to-date. Without fairly current compilers (i.e., not the old ones that come with `OS X`), it will not be possible to install [RcppArmadillo](https://cran.r-project.org/web/packages/RcppArmadillo/index.html). 
+Mac users will need to be sure their compilers are up-to-date. Without fairly current compilers (i.e., compilers that do not come standard with `OS X`), it will not be possible to install [RcppArmadillo](https://cran.r-project.org/web/packages/RcppArmadillo/index.html). 
 
 For the `g++` family, version `4.6.*` or newer is required. For `g++` and related software, see [The Coatless Professor's OpenMP in R and OSX](http://thecoatlessprofessor.com/programming/openmp-in-r-on-os-x/). Everything up to the `clang4` instructions on that page are recommended.
 
