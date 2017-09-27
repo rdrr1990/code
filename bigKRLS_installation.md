@@ -23,7 +23,12 @@ Mac users will need to be sure their compilers are up-to-date. Without fairly cu
 
 For the `g++` family, version `4.6.*` or newer is required. For `g++` and related software, see [The Coatless Professor's OpenMP in R and OSX](http://thecoatlessprofessor.com/programming/openmp-in-r-on-os-x/). Everything up to the `clang4` instructions on that page are recommended.
 
-Mac users will need `clang4` (the recent version is required for `OMP` multicore processing used by other `R` libraries such as `biglasso`). Though `clang4` can be installed with bash commands, the [installer](https://uofi.box.com/v/r-macos-clang-pkg) developed by the Coatless Professor (@coatless) is highly recommended since it automatically takes care of the configuration files and paths `R` requires. For detail, see [https://github.com/coatless/r-macos-clang](https://github.com/coatless/r-macos-clang). 
+Mac users will need `clang4` (the recent version is required for `OMP` multicore processing used by other `R` libraries such as `biglasso`). Though `clang4` can be installed with bash commands, the [installer](https://uofi.box.com/v/r-macos-clang-pkg) developed by the Coatless Professor (@coatless) is highly recommended since it automatically takes care of the configuration files and paths `R` requires. If you have not already done so, (use `Spotlight Search` to) open `Terminal` and install `Xcode` command line tools with the following:
+
+```
+xcode-select --install
+```
+For detail, see [https://github.com/coatless/r-macos-clang](https://github.com/coatless/r-macos-clang). 
 
 If troubles persist, we found the following pages particularly helpful: [A](http://thecoatlessprofessor.com/programming/setting-up-rstudio-to-work-with-rcpparmadillo/), [B](http://thecoatlessprofessor.com/programming/rcpp-rcpparmadillo-and-os-x-mavericks-lgfortran-and-lquadmath-error/), and section 2.16 of: [C](http://dirk.eddelbuettel.com/code/rcpp/Rcpp-FAQ.pdf).
 
