@@ -50,7 +50,7 @@ s <- summary(out)
 kable(s[["overview"]] %>% format(digits = 2, scientific = FALSE))
 ```
 
-```
+
 |                        |Fold 1  |Fold 2   |Fold 3   |Fold 4  |Fold 5  |
 |:-----------------------|:-------|:--------|:--------|:-------|:-------|
 |MSE (In Sample)         |5.547   |5.339    |5.332    |4.303   |5.504   |
@@ -61,7 +61,6 @@ kable(s[["overview"]] %>% format(digits = 2, scientific = FALSE))
 |R2 (Out of Sample)      |0.883   |0.868    |0.871    |0.857   |0.910   |
 |R2 AME (In Sample)      |0.068   |0.048    |0.070    |0.046   |0.068   |
 |R2 AME (Out of Sample)  |0.085   |0.120    |0.019    |0.356   |0.108   |
-```
 
 The model fits the best for Fold 5 (lowest Mean Squared Error and highest $R^2$ out of sample). The model is massively non-additive in that giant gaps between how much the model as a whole explains vs. how much the average marginal effects (AMEs) explain. The AMEs are most informative for Fold 4.
 
