@@ -47,7 +47,7 @@ out <- crossvalidate.bigKRLS(y, X, seed = 1234, Kfolds = 5)
 
 ```r
 s <- summary(out)
-kable(s[["overview"]] %>% format(digits = 2, scientific = FALSE))
+s[["overview"]] %>% format(digits = 2, scientific = FALSE) %>% kable
 ```
 
 
