@@ -1,14 +1,16 @@
 kms: foRmulas foR keRas
 ================
 Pete Mohanty
-December 29, 2017
+January 04, 2018
 
-The goal of this document is to introduce `kms` (as in `keras_model_sequential()`), a regression-style function which allows users to call `keras` neural nets with `R` `formula` objects. Formulas are very powerful in R; in the first example below, a small tweak in the way the dependent variable is coded explains an additional 20% of out of sample variance. `kms` splits training and test data into sparse matrices.`kms` also auto-detects whether the dependent variable is categorical (see Example 1: rtweet) or binary (see Example 2: imdb). `kms` accepts the major parameters found in `library(keras)` as inputs (loss function, batch size, number of epochs, etc.) and allows users to customize basic neural nets. Example 2 also shows how to pass a compiled `keras_model_sequential` to `kms` (preferable for more complex models). The examples here don't provide particularly predictive models so much as show how using `formula` objects can smooth data cleaning and hyperparameter selection.
+The goal of this document is to introduce `kms`, the main function of `library(formulakeras)`, a high-level interface for [Keras for R](https://keras.rstudio.com/). `kms`, as in `keras_model_sequential()`, is a regression-style function that lets you build `keras` neural nets with `R` `formula` objects. Formulas are very powerful in R; in the first example below, a small tweak in the way the dependent variable is coded explains an additional 20% of out of sample variance. `kms` splits training and test data into sparse matrices.`kms` also auto-detects whether the dependent variable is categorical (see Example 1: rtweet) or binary (see Example 2: imdb).
 
-To install my [branch](https://github.com/rdrr1990/keras) of `keras`,
+`kms` accepts the major parameters found in `library(keras)` as inputs (loss function, batch size, number of epochs, etc.) and allows users to customize basic neural nets. Example 2 also shows how to pass a compiled `keras_model_sequential` to `kms` (preferable for more complex models). The examples here don't provide particularly predictive models so much as show how using `formula` objects can smooth data cleaning and hyperparameter selection.
+
+To install the development version [formulakeras](https://github.com/rdrr1990/keras),
 
 ``` r
-devtools::install_github("rdrr1990/keras")
+devtools::install_github("rdrr1990/kerasformula")
 ```
 
 Example 1: rtweet data
@@ -22,19 +24,19 @@ rt <- search_tweets("#rstats", n = 5000, include_rts = FALSE)
 dim(rt)
 ```
 
-    [1] 1766   42
+    [1] 1842   42
 
 ``` r
 summary(rt$retweet_count)
 ```
 
        Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-      0.000   0.000   0.000   3.844   2.000 311.000 
+      0.000   0.000   0.000   3.903   3.000 179.000 
 
 Suppose we wanted to predict how many times a tweet with `#rstat` is going to be retweeted. And suppose we wanted to bin the retweent count into five categories (none, 1-10, 11-50, 51-99, and 100 or more). Suppose we believe that the Twitter handle and source matters as does day of week and time of day.
 
 ``` r
-library(keras)
+library(kerasformula)
 breaks <- c(-1, 0, 1, 10, 50, 100, 10000)
 out <- kms("cut(retweet_count, breaks) ~ screen_name + source +
             grepl('gg', text) + grepl('tidy', text) + 
@@ -56,14 +58,14 @@ summary(out$model)
     ___________________________________________________________________________
     Layer (type)                     Output Shape                  Param #     
     ===========================================================================
-    dense_1 (Dense)                  (None, 128)                   111232      
+    dense_1 (Dense)                  (None, 128)                   114944      
     ___________________________________________________________________________
     dropout_1 (Dropout)              (None, 128)                   0           
     ___________________________________________________________________________
     dense_2 (Dense)                  (None, 6)                     774         
     ===========================================================================
-    Total params: 112,006
-    Trainable params: 112,006
+    Total params: 115,718
+    Trainable params: 115,718
     Non-trainable params: 0
     ___________________________________________________________________________
 
@@ -73,22 +75,22 @@ out$confusion
 
                  
                   (-1,0] (0,1] (1,10] (10,50] (50,100] (100,1e+04]
-      (-1,0]         134    19     28       1        0           0
-      (0,1]           22     8     12       0        0           0
-      (1,10]          33    13     33       4        0           0
-      (10,50]          5     2      6      14        0           0
-      (50,100]         0     1      2       1        0           0
-      (100,1e+04]      0     0      0       0        0           0
+      (-1,0]         154    16     37       2        0           0
+      (0,1]           26    11     18       0        0           0
+      (1,10]          29     7     29      15        0           0
+      (10,50]         12     2     10      24        0           0
+      (50,100]         0     0      0       2        0           0
+      (100,1e+04]      0     1      0       1        0           0
 
 ``` r
 out$evaluations
 ```
 
     $loss
-    [1] 1.275492
+    [1] 1.336868
 
     $acc
-    [1] 0.5591716
+    [1] 0.550505
 
 Let's say we want to add some data about how many other people are mentioned in each tweet and switch to a (discretized) log scale.
 
@@ -109,10 +111,10 @@ out2$evaluations
 ```
 
     $loss
-    [1] 0.8097513
+    [1] 0.7659704
 
     $acc
-    [1] 0.7146814
+    [1] 0.7207447
 
 ``` r
 out2$confusion
@@ -120,12 +122,11 @@ out2$confusion
 
        
           0   1   2   3
-      0 243  11   0   0
-      1  47  12   2   0
-      2  17   7   3   1
-      3   6   6   3   0
-      4   2   0   0   0
-      5   1   0   0   0
+      0 243  11   2   0
+      1  53   8   2   0
+      2  15   5  19   1
+      3   8   3   4   1
+      4   0   0   1   0
 
 Heading in the right direction. Suppose instead we wanted to add who was mentioned.
 
@@ -151,22 +152,22 @@ out3$evaluations
 ```
 
     $loss
-    [1] 0.8016708
+    [1] 0.8755431
 
     $acc
-    [1] 0.7127072
+    [1] 0.7154255
 
 ``` r
 out3$confusion
 ```
 
        
-          0   1   2   3
-      0 233  10   0   0
-      1  53  17   6   0
-      2  15   7   6   1
-      3   6   2   1   2
-      4   1   0   2   0
+          0   1   2
+      0 242  21   2
+      1  36  13   5
+      2  17   9  14
+      3   5   3   5
+      4   0   2   2
 
 Marginal improvement but the model is still clearly overpredicting the modal outcome (zero retweets) and struggling to forecast the rare, popular tweets. Maybe the model needs more layers.
 
@@ -180,10 +181,10 @@ out4$evaluations
 ```
 
     $loss
-    [1] 0.9468802
+    [1] 0.9109331
 
     $acc
-    [1] 0.694051
+    [1] 0.7107438
 
 ``` r
 out4$confusion
@@ -191,12 +192,12 @@ out4$confusion
 
        
           0
-      0 245
-      1  65
-      2  21
-      3  16
-      4   4
-      5   2
+      0 258
+      1  62
+      2  26
+      3  13
+      4   3
+      5   1
 
 Suppose we wanted to see if the estimates were stable across 10 test/train splits.
 
@@ -214,8 +215,8 @@ for(i in 1:10){
 accuracy
 ```
 
-     [1] 0.6712707 0.6708861 0.7062147 0.6976048 0.6945946 0.7203390 0.6850829
-     [8] 0.5919540 0.7035928 0.7109827
+     [1] 0.7047872 0.6756757 0.6870027 0.6789773 0.6770026 0.7008086 0.6481481
+     [8] 0.6639118 0.6397695 0.6583333
 
 Hmmm... Maybe Model 3 is the closest ... Of course, we might just want more data.
 
@@ -244,8 +245,8 @@ out_dense$confusion
 
        
           1
-      0 109
-      1  89
+      0 105
+      1 101
 
 ``` r
 k <- keras_model_sequential()
@@ -266,8 +267,8 @@ out_lstm$confusion
 
        
           0   1
-      0 113   1
-      1  81   9
+      0 100  17
+      1  45  67
 
 Clearly, `out_lstm` is more accurate (`out_dense` is a "broken clock").
 
