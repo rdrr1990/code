@@ -12,7 +12,10 @@ The goal of this document is to introduce `kms`, the main function of `library(f
 ``` r
 install.packages(keras)
 library(keras)
-install_keras()
+install_keras() # see ?install_keras for install options
+
+install.packages(formulakeras)
+library(kerasformula)
 ```
 
 To install the development version [formulakeras](https://github.com/rdrr1990/keras),
@@ -32,14 +35,14 @@ rt <- search_tweets("#rstats", n = 5000, include_rts = FALSE)
 dim(rt)
 ```
 
-    [1] 2692   42
+    [1] 2764   42
 
 ``` r
 summary(rt$retweet_count)
 ```
 
        Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-      0.000   0.000   1.000   3.849   3.000 207.000 
+      0.000   0.000   1.000   3.755   3.000 207.000 
 
 Suppose we wanted to predict how many times a tweet with `#rstat` is going to be retweeted. And suppose we wanted to bin the retweent count into five categories (none, 1-10, 11-50, 51-99, and 100 or more). Suppose we believe that the Twitter handle and source matters as does day of week and time of day.
 
@@ -66,7 +69,7 @@ summary(out$model)
     ___________________________________________________________________________
     Layer (type)                     Output Shape                  Param #     
     ===========================================================================
-    dense_1 (Dense)                  (None, 256)                   302080      
+    dense_1 (Dense)                  (None, 256)                   302336      
     ___________________________________________________________________________
     dropout_1 (Dropout)              (None, 256)                   0           
     ___________________________________________________________________________
@@ -76,8 +79,8 @@ summary(out$model)
     ___________________________________________________________________________
     dense_3 (Dense)                  (None, 6)                     774         
     ===========================================================================
-    Total params: 335,750
-    Trainable params: 335,750
+    Total params: 336,006
+    Trainable params: 336,006
     Non-trainable params: 0
     ___________________________________________________________________________
 
@@ -87,22 +90,22 @@ out$confusion
 
                  
                   (-1,0] (0,1] (1,10] (10,50] (50,100] (100,1e+04]
-      (-1,0]          83    38     28       3        0           0
-      (0,1]           25    98     50       3        0           0
-      (1,10]          23    46     92      16        0           0
-      (10,50]          3     4     28      13        0           0
-      (50,100]         1     2      0       3        0           0
-      (100,1e+04]      0     0      1       1        0           0
+      (-1,0]          84    29     32       5        0           0
+      (0,1]           31    89     40      10        0           0
+      (1,10]          23    38     69      21        0           0
+      (10,50]          2     6     13      15        1           0
+      (50,100]         1     0      1       2        0           0
+      (100,1e+04]      0     0      1       3        0           0
 
 ``` r
 out$evaluations
 ```
 
     $loss
-    [1] 2.448527
+    [1] 2.441821
 
     $acc
-    [1] 0.5098039
+    [1] 0.498062
 
 Let's say we want to add some data about how many other people are mentioned in each tweet and switch to a (discretized) log scale.
 
@@ -123,10 +126,10 @@ out2$evaluations
 ```
 
     $loss
-    [1] 1.143102
+    [1] 1.265371
 
     $acc
-    [1] 0.5933099
+    [1] 0.5634783
 
 ``` r
 out2$confusion
@@ -134,11 +137,12 @@ out2$confusion
 
        
           0   1   2   3
-      0 221 105   1   0
-      1  65  91   1   2
-      2   8  31  24   2
-      3   1   7   3   1
-      4   0   4   0   1
+      0 210 135  13   0
+      1  40  92  18   0
+      2   4  19  22   1
+      3   1  12   5   0
+      4   0   1   1   0
+      5   0   1   0   0
 
 Heading in the right direction. Suppose instead we wanted to add who was mentioned.
 
@@ -164,10 +168,10 @@ out3$evaluations
 ```
 
     $loss
-    [1] 1.310316
+    [1] 1.252435
 
     $acc
-    [1] 0.6084559
+    [1] 0.6169065
 
 ``` r
 out3$confusion
@@ -175,10 +179,12 @@ out3$confusion
 
        
           0   1   2   3
-      0 257  63  12   0
-      1  68  47  10   0
-      2  11  28  27   3
-      3   4   9   5   0
+      0 266  55  15   0
+      1  72  48  12   0
+      2  16  17  29   1
+      3   9   4   7   0
+      4   4   0   0   0
+      5   1   0   0   0
 
 Marginal improvement but the model is still clearly overpredicting the modal outcome (zero retweets) and struggling to forecast the rare, popular tweets. Maybe the model needs more layers.
 
@@ -192,10 +198,10 @@ out4$evaluations
 ```
 
     $loss
-    [1] 0.9818622
+    [1] 0.9360477
 
     $acc
-    [1] 0.6011132
+    [1] 0.5931864
 
 ``` r
 out4$confusion
@@ -203,11 +209,11 @@ out4$confusion
 
        
           0
-      0 324
-      1 141
-      2  53
-      3  17
-      4   4
+      0 296
+      1 144
+      2  44
+      3  13
+      4   2
 
 Suppose we wanted to see if the estimates were stable across 10 test/train splits.
 
@@ -225,8 +231,8 @@ for(i in 1:10){
 accuracy
 ```
 
-     [1] 0.6176471 0.6222222 0.5896947 0.6233522 0.6167883 0.6065574 0.6403670
-     [8] 0.6321627 0.5892514 0.5677656
+     [1] 0.6151079 0.6500000 0.5155963 0.6095764 0.6404887 0.6339286 0.6607143
+     [8] 0.5996409 0.6270872 0.6660714
 
 Hmmm... Maybe Model 3 is the closest ... Of course, we might just want more data.
 
@@ -255,8 +261,8 @@ out_dense$confusion
 
        
           1
-      0  95
-      1 103
+      0  97
+      1 121
 
 ``` r
 k <- keras_model_sequential()
@@ -277,8 +283,8 @@ out_lstm$confusion
 
        
          0  1
-      0 90 15
-      1 48 42
+      0 57 53
+      1 25 70
 
 Clearly, `out_lstm` is more accurate (`out_dense` is a "broken clock").
 
