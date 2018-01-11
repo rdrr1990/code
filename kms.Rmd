@@ -15,6 +15,14 @@ The goal of this document is to introduce `kms`, the main function of `library(f
 
 `kms` accepts the major parameters found in `library(keras)` as inputs (loss function, batch size, number of epochs, etc.) and allows users to customize basic neural nets.  Example 2 also shows how to pass a compiled `keras_model_sequential` to `kms` (preferable for more complex models). The examples here don't provide particularly predictive models so much as show how using `formula` objects can smooth data cleaning and hyperparameter selection.   
 
+`formulakeras` is now available on CRAN. It assumes both that `library(keras)` is installed and configured.
+
+```{r, eval=FALSE}
+install.packages(keras)
+library(keras)
+install_keras()
+```
+
 To install the development version [formulakeras](https://github.com/rdrr1990/keras),
 
 ```{r, eval = FALSE}
